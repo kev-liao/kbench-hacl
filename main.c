@@ -64,6 +64,9 @@ static __always_inline int name(void) \
 
 declare_it(donna64)
 declare_it(hacl64)
+declare_it(hacl51)
+declare_it(vale64)
+declare_it(mixed64)
 declare_it(fiat64)
 declare_it(sandy2x)
 declare_it(amd64)
@@ -87,6 +90,10 @@ static bool verify(void)
 	for (i = 0; i < ARRAY_SIZE(curve25519_test_vectors); ++i) {
 		test_it(donna64, {}, {});
 		test_it(hacl64, {}, {});
+		test_it(hacl51, {}, {});
+		test_it(vale64, {}, {});
+		if (boot_cpu_has(X86_FEATURE_BMI2) && boot_cpu_has(X86_FEATURE_ADX))
+		  test_it(mixed64, {}, {});
 		test_it(fiat64, {}, {});
 		if (boot_cpu_has(X86_FEATURE_AVX) && cpu_has_xfeatures(XFEATURE_MASK_SSE | XFEATURE_MASK_YMM, NULL))
 			test_it(sandy2x, kernel_fpu_begin(), kernel_fpu_end());
@@ -110,6 +117,9 @@ static int __init mod_init(void)
 	cycles_t *trial_times;
 	cycles_t median_donna64 = 0;
 	cycles_t median_hacl64 = 0;
+	cycles_t median_hacl51 = 0;
+	cycles_t median_vale64 = 0;
+	cycles_t median_mixed64 = 0;
 	cycles_t median_fiat64 = 0;
 	cycles_t median_sandy2x = 0;
 	cycles_t median_amd64 = 0;
@@ -134,6 +144,10 @@ static int __init mod_init(void)
 
 	do_it(donna64);
 	do_it(hacl64);
+	do_it(hacl51);
+	do_it(vale64);
+	if (boot_cpu_has(X86_FEATURE_BMI2) && boot_cpu_has(X86_FEATURE_ADX))
+	  do_it(mixed64);
 	do_it(fiat64);
 	if (boot_cpu_has(X86_FEATURE_AVX) && cpu_has_xfeatures(XFEATURE_MASK_SSE | XFEATURE_MASK_YMM, NULL)) {
 		kernel_fpu_begin();
@@ -154,6 +168,10 @@ static int __init mod_init(void)
 	
 	report_it(donna64);
 	report_it(hacl64);
+	report_it(hacl51);
+	report_it(vale64);
+	if (boot_cpu_has(X86_FEATURE_BMI2) && boot_cpu_has(X86_FEATURE_ADX))
+  	   report_it(mixed64);
 	report_it(fiat64);
 	if (boot_cpu_has(X86_FEATURE_AVX) && cpu_has_xfeatures(XFEATURE_MASK_SSE | XFEATURE_MASK_YMM, NULL))
 		report_it(sandy2x);
