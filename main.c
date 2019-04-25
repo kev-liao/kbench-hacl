@@ -17,7 +17,7 @@ static unsigned long stamp = 0;
 module_param(stamp, ulong, 0);
 int dummy;
 
-static bool dangerous = false;
+static bool dangerous = true;
 module_param(dangerous, bool, 0600);
 
 enum { CURVE25519_POINT_SIZE = 32 };
@@ -158,22 +158,22 @@ static int __init mod_init(void)
 
 	spin_unlock_irqrestore(&lock, flags);
 	
+	report_it(tweetnacl);
+	report_it(donna32);
+	report_it(fiat32);
 	report_it(donna64);
-	report_it(hacl51);
 	report_it(fiat64);
+	if (dangerous)
+		report_it(amd64);
 	if (boot_cpu_has(X86_FEATURE_AVX) && cpu_has_xfeatures(XFEATURE_MASK_SSE | XFEATURE_MASK_YMM, NULL))
 		report_it(sandy2x);
+	report_it(hacl51);
 	if (boot_cpu_has(X86_FEATURE_BMI2))
 		report_it(precomp_bmi2);
 	if (boot_cpu_has(X86_FEATURE_BMI2) && boot_cpu_has(X86_FEATURE_ADX))
 		report_it(precomp_adx);
 	if (boot_cpu_has(X86_FEATURE_BMI2) && boot_cpu_has(X86_FEATURE_ADX))
 	        report_it(evercrypt64);
-	if (dangerous)
-		report_it(amd64);
-	report_it(fiat32);
-	report_it(donna32);
-	report_it(tweetnacl);
 
 	/* Don't let compiler be too clever. */
 	dummy = ret;
