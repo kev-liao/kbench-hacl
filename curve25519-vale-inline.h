@@ -9,9 +9,9 @@ typedef uint64_t u64;
 typedef uint8_t u8;
 typedef __uint128_t uint128_t;
 
+#define force_inline inline //__attribute((always_inline))
 
-
-static __always_inline uint64_t add1 (uint64_t* arg0, uint64_t* arg1, uint64_t arg2) {
+static force_inline uint64_t add1 (uint64_t* arg0, uint64_t* arg1, uint64_t arg2) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t arg2_r asm("rdx") = arg2;
@@ -40,7 +40,7 @@ static __always_inline uint64_t add1 (uint64_t* arg0, uint64_t* arg1, uint64_t a
 return carry_r;
 }
 
-static __always_inline void fadd (uint64_t* arg0, uint64_t* arg1, uint64_t* arg2) {
+static force_inline void fadd (uint64_t* arg0, uint64_t* arg1, uint64_t* arg2) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t* arg2_r asm("rdx") = arg2;
@@ -75,7 +75,7 @@ static __always_inline void fadd (uint64_t* arg0, uint64_t* arg1, uint64_t* arg2
   );
 }
 
-static __always_inline void fsub (uint64_t* arg0, uint64_t* arg1, uint64_t* arg2) {
+static force_inline void fsub (uint64_t* arg0, uint64_t* arg1, uint64_t* arg2) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t* arg2_r asm("rdx") = arg2;
@@ -109,7 +109,7 @@ static __always_inline void fsub (uint64_t* arg0, uint64_t* arg1, uint64_t* arg2
   );
 }
 
-static __always_inline void fmul (uint64_t* arg2, uint64_t* arg1, uint64_t* arg3, uint64_t* arg0) {
+static force_inline void fmul (uint64_t* arg2, uint64_t* arg1, uint64_t* arg3, uint64_t* arg0) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t* arg2_r asm("rdx") = arg2;
@@ -225,7 +225,7 @@ static __always_inline void fmul (uint64_t* arg2, uint64_t* arg1, uint64_t* arg3
   );
 }
 
-static __always_inline void fmul2 (uint64_t* arg2, uint64_t* arg1, uint64_t* arg3, uint64_t* arg0) {
+static force_inline void fmul2 (uint64_t* arg2, uint64_t* arg1, uint64_t* arg3, uint64_t* arg0) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t* arg2_r asm("rdx") = arg2;
@@ -441,7 +441,7 @@ static __always_inline void fmul2 (uint64_t* arg2, uint64_t* arg1, uint64_t* arg
   );
 }
 
-static __always_inline void fmul1 (uint64_t* arg0, uint64_t* arg1, uint64_t arg2) {
+static force_inline void fmul1 (uint64_t* arg0, uint64_t* arg1, uint64_t arg2) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t arg2_r asm("rdx") = arg2;
@@ -475,7 +475,7 @@ static __always_inline void fmul1 (uint64_t* arg0, uint64_t* arg1, uint64_t arg2
   );
 }
 
-static __always_inline void cswap2 (uint64_t arg2,uint64_t* arg0, uint64_t* arg1) {
+static force_inline void cswap2 (uint64_t arg2,uint64_t* arg0, uint64_t* arg1) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t arg2_r asm("rdx") = arg2;
@@ -544,7 +544,7 @@ static __always_inline void cswap2 (uint64_t arg2,uint64_t* arg0, uint64_t* arg1
   );
 }
 
-static __always_inline void fsqr (uint64_t* arg2, uint64_t* arg1, uint64_t* arg0) {
+static force_inline void fsqr (uint64_t* arg2, uint64_t* arg1, uint64_t* arg0) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t* arg2_r asm("rdx") = arg2;
@@ -638,7 +638,7 @@ static __always_inline void fsqr (uint64_t* arg2, uint64_t* arg1, uint64_t* arg0
   );
 }
 
-static __always_inline void fsqr2 (uint64_t* arg2, uint64_t* arg1, uint64_t* arg0) {
+static force_inline void fsqr2 (uint64_t* arg2, uint64_t* arg1, uint64_t* arg0) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t* arg2_r asm("rdx") = arg2;

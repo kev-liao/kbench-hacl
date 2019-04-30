@@ -80,7 +80,7 @@ Hacl_Impl_Curve25519_AddAndDouble_point_add_and_double_64(
   ab1 = tmp1;
   dc1 = tmp1 + (uint32_t)8U;
   fsqr2(dc1, ab1, tmp2);
-  fsqr2(nq_p1, nq_p1, tmp2);
+  fsqr2(nq_p1, nq_p1, tmp2+16);
   a1[0U] = c[0U];
   a1[1U] = c[1U];
   a1[2U] = c[2U];
@@ -89,7 +89,7 @@ Hacl_Impl_Curve25519_AddAndDouble_point_add_and_double_64(
   fmul1(b1, c, (uint64_t)121665U);
   fadd(b1, b1, d);
   fmul2(nq, dc1, ab1, tmp2);
-  fmul(z3, z3, x1, tmp2);
+  fmul(z3, z3, x1, tmp2+16);
 }
 
 inline static void
@@ -134,7 +134,7 @@ Hacl_Impl_Curve25519_Finv_fsquare_times_64(
 
 inline static void Hacl_Impl_Curve25519_Finv_finv_64(uint64_t *o, uint64_t *i, uint64_t *tmp)
 {
-  uint64_t t1[16U] = { 0U };
+  uint64_t t1[16U] __attribute((aligned(32))) = { 0U };
   uint64_t *a0 = t1;
   uint64_t *b = t1 + (uint32_t)4U;
   uint64_t *c = t1 + (uint32_t)8U;
@@ -171,8 +171,8 @@ inline static void Hacl_Impl_Curve25519_Finv_finv_64(uint64_t *o, uint64_t *i, u
 inline static void
 Hacl_Impl_Curve25519_Generic_montgomery_ladder_64(uint64_t *out, uint8_t *key, uint64_t *init1)
 {
-  uint64_t tmp2[16U] = { 0U };
-  uint64_t p01_tmp1_swap[33U] = { 0U };
+  uint64_t tmp2[32U] __attribute((aligned(32))) = { 0U };
+  uint64_t p01_tmp1_swap[33U] __attribute((aligned(32))) = { 0U };
   uint64_t *p0 = p01_tmp1_swap;
   uint64_t *p01 = p01_tmp1_swap;
   uint64_t *p03 = p01;
@@ -236,7 +236,7 @@ Hacl_Impl_Curve25519_Generic_montgomery_ladder_64(uint64_t *out, uint8_t *key, u
   memcpy(out, p0, (uint32_t)8U * sizeof p0[0U]);
 }
 
-static uint8_t
+static uint8_t __attribute((aligned(32)))
 Hacl_Impl_Curve25519_Generic_g25519[32U] =
   {
     (uint8_t)9U, (uint8_t)0U, (uint8_t)0U, (uint8_t)0U, (uint8_t)0U, (uint8_t)0U, (uint8_t)0U,
@@ -399,7 +399,7 @@ void curve25519_evercrypt64(uint8_t *shared, uint8_t *my_priv, uint8_t *their_pu
 {
   KRML_CHECK_SIZE(sizeof (uint64_t), (uint32_t)2U * (uint32_t)4U);
   {
-    uint64_t init1[(uint32_t)2U * (uint32_t)4U];
+    uint64_t init1[(uint32_t)2U * (uint32_t)4U] __attribute((aligned(32)));
     memset(init1, 0U, (uint32_t)2U * (uint32_t)4U * sizeof init1[0U]);
     {
       uint64_t tmp0[4U] = { 0U };
