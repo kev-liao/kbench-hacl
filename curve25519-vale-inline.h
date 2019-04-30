@@ -9,7 +9,7 @@ typedef uint64_t u64;
 typedef uint8_t u8;
 typedef __uint128_t uint128_t;
 
-#define force_inline inline //__attribute((always_inline))
+#define force_inline inline 
 
 static force_inline uint64_t add1 (uint64_t* arg0, uint64_t* arg1, uint64_t arg2) {
   register uint64_t* arg0_r asm("rdi") = arg0;

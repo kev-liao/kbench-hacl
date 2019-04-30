@@ -34,7 +34,7 @@ inline static uint64_t FStar_UInt64_gte_mask(uint64_t a, uint64_t b)
   return x_xor_q_ - (uint64_t)1U;
 }
 
-inline static void
+static void
 Hacl_Impl_Curve25519_AddAndDouble_point_add_and_double_64(
   uint64_t *q,
   uint64_t *p01_tmp1,
@@ -80,7 +80,7 @@ Hacl_Impl_Curve25519_AddAndDouble_point_add_and_double_64(
   ab1 = tmp1;
   dc1 = tmp1 + (uint32_t)8U;
   fsqr2(dc1, ab1, tmp2);
-  fsqr2(nq_p1, nq_p1, tmp2+16);
+  fsqr2(nq_p1, nq_p1, tmp2);
   a1[0U] = c[0U];
   a1[1U] = c[1U];
   a1[2U] = c[2U];
@@ -89,10 +89,10 @@ Hacl_Impl_Curve25519_AddAndDouble_point_add_and_double_64(
   fmul1(b1, c, (uint64_t)121665U);
   fadd(b1, b1, d);
   fmul2(nq, dc1, ab1, tmp2);
-  fmul(z3, z3, x1, tmp2+16);
+  fmul(z3, z3, x1, tmp2);
 }
 
-inline static void
+static void
 Hacl_Impl_Curve25519_AddAndDouble_point_double_64(uint64_t *nq, uint64_t *tmp1, uint64_t *tmp2)
 {
   uint64_t *x2 = nq;
@@ -132,7 +132,7 @@ Hacl_Impl_Curve25519_Finv_fsquare_times_64(
   }
 }
 
-inline static void Hacl_Impl_Curve25519_Finv_finv_64(uint64_t *o, uint64_t *i, uint64_t *tmp)
+static void Hacl_Impl_Curve25519_Finv_finv_64(uint64_t *o, uint64_t *i, uint64_t *tmp)
 {
   uint64_t t1[16U] __attribute((aligned(32))) = { 0U };
   uint64_t *a0 = t1;
@@ -168,10 +168,10 @@ inline static void Hacl_Impl_Curve25519_Finv_finv_64(uint64_t *o, uint64_t *i, u
   fmul(o, t0, a, tmp);
 }
 
-inline static void
+static void
 Hacl_Impl_Curve25519_Generic_montgomery_ladder_64(uint64_t *out, uint8_t *key, uint64_t *init1)
 {
-  uint64_t tmp2[32U] __attribute((aligned(32))) = { 0U };
+  uint64_t tmp2[16U] __attribute((aligned(32))) = { 0U };
   uint64_t p01_tmp1_swap[33U] __attribute((aligned(32))) = { 0U };
   uint64_t *p0 = p01_tmp1_swap;
   uint64_t *p01 = p01_tmp1_swap;
