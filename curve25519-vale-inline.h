@@ -1,13 +1,17 @@
 #ifdef __GNUC__
 #pragma once
-#include <linux/kernel.h>
-#include <linux/string.h>
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+
+typedef uint64_t u64;
+typedef uint8_t u8;
 typedef __uint128_t uint128_t;
-typedef u64 uint64_t;
-typedef u8  uint8_t;
 
 
-static inline uint64_t add1 (uint64_t* arg0, uint64_t* arg1, uint64_t arg2) {
+
+static __always_inline uint64_t add1 (uint64_t* arg0, uint64_t* arg1, uint64_t arg2) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t arg2_r asm("rdx") = arg2;
@@ -36,7 +40,7 @@ static inline uint64_t add1 (uint64_t* arg0, uint64_t* arg1, uint64_t arg2) {
 return carry_r;
 }
 
-static inline void fadd (uint64_t* arg0, uint64_t* arg1, uint64_t* arg2) {
+static __always_inline void fadd (uint64_t* arg0, uint64_t* arg1, uint64_t* arg2) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t* arg2_r asm("rdx") = arg2;
@@ -71,7 +75,7 @@ static inline void fadd (uint64_t* arg0, uint64_t* arg1, uint64_t* arg2) {
   );
 }
 
-static inline void fsub (uint64_t* arg0, uint64_t* arg1, uint64_t* arg2) {
+static __always_inline void fsub (uint64_t* arg0, uint64_t* arg1, uint64_t* arg2) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t* arg2_r asm("rdx") = arg2;
@@ -105,7 +109,7 @@ static inline void fsub (uint64_t* arg0, uint64_t* arg1, uint64_t* arg2) {
   );
 }
 
-static inline void fmul (uint64_t* arg2, uint64_t* arg1, uint64_t* arg3, uint64_t* arg0) {
+static __always_inline void fmul (uint64_t* arg2, uint64_t* arg1, uint64_t* arg3, uint64_t* arg0) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t* arg2_r asm("rdx") = arg2;
@@ -221,7 +225,7 @@ static inline void fmul (uint64_t* arg2, uint64_t* arg1, uint64_t* arg3, uint64_
   );
 }
 
-static inline void fmul2 (uint64_t* arg2, uint64_t* arg1, uint64_t* arg3, uint64_t* arg0) {
+static __always_inline void fmul2 (uint64_t* arg2, uint64_t* arg1, uint64_t* arg3, uint64_t* arg0) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t* arg2_r asm("rdx") = arg2;
@@ -437,7 +441,7 @@ static inline void fmul2 (uint64_t* arg2, uint64_t* arg1, uint64_t* arg3, uint64
   );
 }
 
-static inline void fmul1 (uint64_t* arg0, uint64_t* arg1, uint64_t arg2) {
+static __always_inline void fmul1 (uint64_t* arg0, uint64_t* arg1, uint64_t arg2) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t arg2_r asm("rdx") = arg2;
@@ -471,7 +475,7 @@ static inline void fmul1 (uint64_t* arg0, uint64_t* arg1, uint64_t arg2) {
   );
 }
 
-static inline void cswap2 (uint64_t arg2,uint64_t* arg0, uint64_t* arg1) {
+static __always_inline void cswap2 (uint64_t arg2,uint64_t* arg0, uint64_t* arg1) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t arg2_r asm("rdx") = arg2;
@@ -540,7 +544,7 @@ static inline void cswap2 (uint64_t arg2,uint64_t* arg0, uint64_t* arg1) {
   );
 }
 
-static inline void fsqr (uint64_t* arg2, uint64_t* arg1, uint64_t* arg0) {
+static __always_inline void fsqr (uint64_t* arg2, uint64_t* arg1, uint64_t* arg0) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t* arg2_r asm("rdx") = arg2;
@@ -634,7 +638,7 @@ static inline void fsqr (uint64_t* arg2, uint64_t* arg1, uint64_t* arg0) {
   );
 }
 
-static inline void fsqr2 (uint64_t* arg2, uint64_t* arg1, uint64_t* arg0) {
+static __always_inline void fsqr2 (uint64_t* arg2, uint64_t* arg1, uint64_t* arg0) {
   register uint64_t* arg0_r asm("rdi") = arg0;
   register uint64_t* arg1_r asm("rsi") = arg1;
   register uint64_t* arg2_r asm("rdx") = arg2;

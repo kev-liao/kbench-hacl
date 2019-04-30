@@ -3,26 +3,40 @@
  * Copyright (C) 2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/delay.h>
-#include <linux/slab.h>
-#include <linux/sort.h>
-#include <asm/cpufeature.h>
-#include <asm/processor.h>
-#include <asm/fpu/api.h>
-#include <asm/simd.h>
+#include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdbool.h>
+#include <time.h>
+
+typedef uint8_t u8;
+typedef uint32_t u32;
+typedef unsigned long long cycles_t;
+
+#define ARRAY_SIZE(a)                               \
+  ((sizeof(a) / sizeof(*(a))) /                     \
+   (size_t)(!(sizeof(a) % sizeof(*(a)))))
 
 static unsigned long stamp = 0;
-module_param(stamp, ulong, 0);
 int dummy;
 
-static bool dangerous = true;
-module_param(dangerous, bool, 0600);
 
 enum { CURVE25519_POINT_SIZE = 32 };
 u8 dummy_out[CURVE25519_POINT_SIZE];
 #include "test_vectors.h"
+
+
+static __inline__ cycles_t get_cycles(void)
+{
+  uint64_t rax,rdx,aux;
+  asm volatile ( "rdtscp\n" : "=a" (rax), "=d" (rdx), "=c" (aux) : : );
+  return (rdx << 32) + rax;
+}
 
 #define declare_it(name) \
 bool curve25519_ ## name(u8 mypublic[CURVE25519_POINT_SIZE], const u8 secret[CURVE25519_POINT_SIZE], const u8 basepoint[CURVE25519_POINT_SIZE]); \
@@ -42,7 +56,7 @@ static __always_inline int name(void) \
 	} \
 	for (i = 0; i < TRIALS; ++i) \
 		trial_times[i] = trial_times[i + 1] - trial_times[i]; \
-	sort(trial_times, TRIALS + 1, sizeof(cycles_t), compare_cycles, NULL); \
+	qsort(trial_times, TRIALS + 1, sizeof(cycles_t), compare_cycles); \
 	median_ ## name = trial_times[TRIALS / 2]; \
 } while (0)
 
@@ -52,13 +66,13 @@ static __always_inline int name(void) \
 	ret = curve25519_ ## name(out, curve25519_test_vectors[i].private, curve25519_test_vectors[i].public); \
 	after; \
 	if (memcmp(out, curve25519_test_vectors[i].result, CURVE25519_POINT_SIZE)) { \
-		pr_err(#name " self-test %zu: FAIL\n", i + 1); \
+		fprintf(stderr,#name " self-test %zu: FAIL\n", i + 1); \
 		return false; \
 	} \
 } while (0)
 
 #define report_it(name) do { \
-	pr_err("%lu: %12s: %6llu cycles per call\n", stamp, #name, median_ ## name); \
+  fprintf(stderr,"%lu: %12s: %6llu cycles per call\n", stamp, #name, median_ ## name); \
 } while (0)
 
 
@@ -66,13 +80,10 @@ declare_it(donna64)
 declare_it(evercrypt64)
 declare_it(hacl51)
 declare_it(fiat64)
-declare_it(sandy2x)
 declare_it(amd64)
 declare_it(precomp_bmi2)
 declare_it(precomp_adx)
-declare_it(fiat32)
-declare_it(donna32)
-declare_it(tweetnacl)
+declare_it(openssl)
 
 static int compare_cycles(const void *a, const void *b)
 {
@@ -88,28 +99,18 @@ static bool verify(void)
 	for (i = 0; i < ARRAY_SIZE(curve25519_test_vectors); ++i) {
 		test_it(donna64, {}, {});
 		test_it(hacl51, {}, {});
-		if (boot_cpu_has(X86_FEATURE_BMI2) && boot_cpu_has(X86_FEATURE_ADX))
-		  test_it(evercrypt64, {}, {});
-
+		test_it(evercrypt64, {}, {});
 		test_it(fiat64, {}, {});
-		if (boot_cpu_has(X86_FEATURE_AVX) && cpu_has_xfeatures(XFEATURE_MASK_SSE | XFEATURE_MASK_YMM, NULL))
-			test_it(sandy2x, kernel_fpu_begin(), kernel_fpu_end());
-		if (boot_cpu_has(X86_FEATURE_BMI2))
-			test_it(precomp_bmi2, {}, {});
-		if (boot_cpu_has(X86_FEATURE_BMI2) && boot_cpu_has(X86_FEATURE_ADX))
-			test_it(precomp_adx, {}, {});
-		if (dangerous)
-			test_it(amd64, {}, {});
-		test_it(fiat32, {}, {});
-		test_it(donna32, {}, {});
-		test_it(tweetnacl, {}, {});
+		test_it(precomp_bmi2, {}, {});
+		test_it(precomp_adx, {}, {});
+		test_it(openssl, {}, {});
 	}
 	return true;
 }
 
-static int __init mod_init(void)
+int main()
 {
-	enum { WARMUP = 6000, TRIALS = 5000, IDLE = 1 * 1000 };
+	enum { WARMUP = 10000, TRIALS = 10000, IDLE = 1 * 1000 };
 	int ret = 0, i;
 	cycles_t *trial_times;
 	cycles_t median_donna64 = 0;
@@ -123,61 +124,37 @@ static int __init mod_init(void)
 	cycles_t median_fiat32 = 0;
 	cycles_t median_donna32 = 0;
 	cycles_t median_tweetnacl = 0;
+	cycles_t median_openssl = 0;
 	unsigned long flags;
-	DEFINE_SPINLOCK(lock);
 
 	if (!verify())
-		return -EBFONT;
+		return -1;
 
-	trial_times = kcalloc(TRIALS + 1, sizeof(cycles_t), GFP_KERNEL);
+	trial_times = calloc(TRIALS + 1, sizeof(cycles_t));
 	if (!trial_times)
-		return -ENOMEM;
-
-	msleep(IDLE);
-
-	spin_lock_irqsave(&lock, flags);
+		return -1;
 
 	do_it(donna64);
-	do_it(evercrypt64);
 	do_it(hacl51);
 	do_it(fiat64);
-	if (boot_cpu_has(X86_FEATURE_AVX) && cpu_has_xfeatures(XFEATURE_MASK_SSE | XFEATURE_MASK_YMM, NULL)) {
-		kernel_fpu_begin();
-		do_it(sandy2x);
-		kernel_fpu_end();
-	}
-	if (boot_cpu_has(X86_FEATURE_BMI2))
-		do_it(precomp_bmi2);
-	if (boot_cpu_has(X86_FEATURE_BMI2) && boot_cpu_has(X86_FEATURE_ADX))
-		do_it(precomp_adx);
-	if (dangerous)
-		do_it(amd64);
-	do_it(fiat32);
-	do_it(donna32);
-	do_it(tweetnacl);
-
-	spin_unlock_irqrestore(&lock, flags);
+	do_it(precomp_bmi2);
+	do_it(precomp_adx);
+	do_it(evercrypt64);
+	do_it(amd64);
+	do_it(openssl);
 	
-	report_it(tweetnacl);
-	report_it(donna32);
-	report_it(fiat32);
 	report_it(donna64);
 	report_it(fiat64);
-	if (dangerous)
-		report_it(amd64);
-	if (boot_cpu_has(X86_FEATURE_AVX) && cpu_has_xfeatures(XFEATURE_MASK_SSE | XFEATURE_MASK_YMM, NULL))
-		report_it(sandy2x);
+	report_it(amd64);
 	report_it(hacl51);
-	if (boot_cpu_has(X86_FEATURE_BMI2))
-		report_it(precomp_bmi2);
-	if (boot_cpu_has(X86_FEATURE_BMI2) && boot_cpu_has(X86_FEATURE_ADX))
-		report_it(precomp_adx);
-	if (boot_cpu_has(X86_FEATURE_BMI2) && boot_cpu_has(X86_FEATURE_ADX))
-	        report_it(evercrypt64);
+	report_it(openssl);
+	report_it(precomp_bmi2);
+	report_it(precomp_adx);
+        report_it(evercrypt64);
 
 	/* Don't let compiler be too clever. */
 	dummy = ret;
-	kfree(trial_times);
+	free(trial_times);
 	
 	/* We should never actually agree to insert the module. Choosing
 	 * -0x1000 here is an amazing hack. It causes the kernel to not
@@ -185,8 +162,3 @@ static int __init mod_init(void)
 	 * don't return an error, because it's too big. */
 	return -0x1000;
 }
-
-module_init(mod_init);
-MODULE_LICENSE("GPL v2");
-MODULE_DESCRIPTION("kBench9000 Cycle Counter");
-MODULE_AUTHOR("Jason A. Donenfeld <Jason@zx2c4.com>");

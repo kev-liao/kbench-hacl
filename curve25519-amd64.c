@@ -6,16 +6,17 @@
  * Original author: Peter Schwabe <peter@cryptojedi.org>
  */
 
-#include <linux/kernel.h>
-#include <linux/string.h>
-
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+typedef uint8_t u8;
 typedef struct { uint64_t v[5]; } fe25519;
 
-asmlinkage void x25519_x86_64_work_cswap(fe25519 *, uint64_t);
-asmlinkage void x25519_x86_64_mul(fe25519 *out, const fe25519 *a, const fe25519 *b);
-asmlinkage void x25519_x86_64_square(fe25519 *out, const fe25519 *a);
-asmlinkage void x25519_x86_64_freeze(fe25519 *);
-asmlinkage void x25519_x86_64_ladderstep(fe25519 *work);
+extern void x25519_x86_64_work_cswap(fe25519 *, uint64_t);
+extern void x25519_x86_64_mul(fe25519 *out, const fe25519 *a, const fe25519 *b);
+extern void x25519_x86_64_square(fe25519 *out, const fe25519 *a);
+extern void x25519_x86_64_freeze(fe25519 *);
+extern void x25519_x86_64_ladderstep(fe25519 *work);
 
 enum { CURVE25519_POINT_SIZE = 32 };
 

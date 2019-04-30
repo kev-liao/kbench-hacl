@@ -6,8 +6,25 @@
  * Original author: Adam Langley <agl@imperialviolet.org>
  */
 
-#include <linux/kernel.h>
-#include <linux/string.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+
+typedef uint64_t u64;
+typedef uint8_t u8;
+
+//#define load_limb(b_i) le64_to_cpup((__force __le64 *)b_i)
+//#define store_limb(b_o,o) *(__force __le64 *)(b_o) = cpu_to_le64(o)
+
+static inline u64 load_limb(const u8* b){
+  uint64_t x;
+  memcpy(&x, b, 8);
+  return x;
+}
+static inline void store_limb(u8* b,u64 o) {
+  memcpy(b,&o,8);
+}
+
 
 enum { CURVE25519_POINT_SIZE = 32 };
 
@@ -171,17 +188,6 @@ static __always_inline void fsquare_times(felem output, const felem in, limb cou
 	output[2] = r2;
 	output[3] = r3;
 	output[4] = r4;
-}
-
-/* Load a little-endian 64-bit number  */
-static inline limb load_limb(const u8 *in)
-{
-	return le64_to_cpu(*(__le64 *)in);
-}
-
-static inline void store_limb(u8 *out, limb in)
-{
-	*(__le64 *)out = cpu_to_le64(in);
 }
 
 /* Take a little-endian, 32-byte number and expand it into polynomial form */

@@ -7,10 +7,22 @@
  * https://github.com/mit-plv/fiat-crypto
  */
 
-#include <linux/kernel.h>
-#include <linux/string.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
 
+typedef uint64_t u64;
+typedef uint8_t u8;
 typedef __uint128_t u128;
+
+static inline u64 load64_le(const u8* b){
+  uint64_t x;
+  memcpy(&x, b, 8);
+  return x;
+}
+static inline void store64_le(u8* b,u64 o) {
+  memcpy(b,&o,8);
+}
 
 enum { CURVE25519_POINT_SIZE = 32 };
 
@@ -36,11 +48,12 @@ typedef struct fe_loose { u64 v[5]; } fe_loose;
 
 static __always_inline void fe_frombytes_impl(u64 h[5], const u8 *s)
 {
-	// Ignores top bit of s.
-	u64 a0 = le64_to_cpup((__force __le64 *)(s));
-	u64 a1 = le64_to_cpup((__force __le64 *)(s+8));
-	u64 a2 = le64_to_cpup((__force __le64 *)(s+16));
-	u64 a3 = le64_to_cpup((__force __le64 *)(s+24));
+  // Ignores top bit of s.
+  u64 a0 = load64_le(s);
+  u64 a1 = load64_le(s+8);
+  u64 a2 = load64_le(s+16);
+  u64 a3 = load64_le(s+24);
+
 	// Use 51 bits, 64-51 = 13 left.
 	h[0] = a0 & ((1ULL << 51) - 1);
 	// (64-51) + 38 = 13 + 38 = 51

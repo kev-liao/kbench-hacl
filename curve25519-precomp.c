@@ -5,8 +5,22 @@
  * Copyright (C) 2018 Samuel Neves <sneves@dei.uc.pt>. All Rights Reserved.
  */
 
-#include <linux/kernel.h>
-#include <linux/string.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+
+typedef uint64_t u64;
+typedef uint8_t u8;
+typedef __uint128_t u128;
+
+static inline u64 load64_le(const u8* b){
+  uint64_t x;
+  memcpy(&x, b, 8);
+  return x;
+}
+static inline void store64_le(u8* b,u64 o) {
+  memcpy(b,&o,8);
+}
 
 enum { CURVE25519_POINT_SIZE = 32 };
 
@@ -18,8 +32,8 @@ static __always_inline void normalize_secret(u8 secret[CURVE25519_POINT_SIZE])
 }
 
 enum { NUM_WORDS_ELTFP25519 = 4 };
-typedef __aligned(32) u64 eltfp25519_1w[NUM_WORDS_ELTFP25519];
-typedef __aligned(32) u64 eltfp25519_1w_buffer[2 * NUM_WORDS_ELTFP25519];
+typedef __attribute((aligned(32))) u64 eltfp25519_1w[NUM_WORDS_ELTFP25519];
+typedef __attribute((aligned(32))) u64 eltfp25519_1w_buffer[2 * NUM_WORDS_ELTFP25519];
 
 #define mul_eltfp25519_1w_adx(c, a, b) do { \
 	mul_256x256_integer_adx(m.buffer, a, b); \
@@ -1258,7 +1272,7 @@ static void inv_eltfp25519_1w_adx(u64 *const c, const u64 *const a)
 	struct {
 		eltfp25519_1w_buffer buffer;
 		eltfp25519_1w x0, x1, x2;
-	} __aligned(32) m;
+	} __attribute((aligned(32))) m;
 	u64 *T[4];
 
 	T[0] = m.x0;
@@ -1303,7 +1317,7 @@ static void inv_eltfp25519_1w_bmi2(u64 *const c, const u64 *const a)
 	struct {
 		eltfp25519_1w_buffer buffer;
 		eltfp25519_1w x0, x1, x2;
-	} __aligned(32) m;
+	} __attribute((aligned(32))) m;
 	u64 *T[5];
 
 	T[0] = m.x0;
@@ -1400,7 +1414,7 @@ bool curve25519_precomp_adx(u8 shared[CURVE25519_POINT_SIZE], const u8 private_k
 		u64 workspace[6 * NUM_WORDS_ELTFP25519];
 		u8 session[CURVE25519_POINT_SIZE];
 		u8 private[CURVE25519_POINT_SIZE];
-	} __aligned(32) m;
+	} __attribute((aligned(32))) m;
 
 	int i = 0, j = 0;
 	u64 prev = 0;
@@ -1499,7 +1513,7 @@ bool curve25519_precomp_bmi2(u8 shared[CURVE25519_POINT_SIZE], const u8 private_
 		u64 workspace[6 * NUM_WORDS_ELTFP25519];
 		u8 session[CURVE25519_POINT_SIZE];
 		u8 private[CURVE25519_POINT_SIZE];
-	} __aligned(32) m;
+	} __attribute((aligned(32))) m;
 
 	int i = 0, j = 0;
 	u64 prev = 0;
