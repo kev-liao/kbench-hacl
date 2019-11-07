@@ -68,6 +68,7 @@ declare_it(hacl51)
 declare_it(fiat64)
 declare_it(sandy2x)
 declare_it(amd64)
+declare_it(jasmin)
 declare_it(precomp_bmi2)
 declare_it(precomp_adx)
 declare_it(fiat32)
@@ -100,6 +101,7 @@ static bool verify(void)
 			test_it(precomp_adx, {}, {});
 		if (dangerous)
 			test_it(amd64, {}, {});
+			test_it(jasmin, {}, {});
 		test_it(fiat32, {}, {});
 		test_it(donna32, {}, {});
 		test_it(tweetnacl, {}, {});
@@ -118,6 +120,7 @@ static int __init mod_init(void)
 	cycles_t median_fiat64 = 0;
 	cycles_t median_sandy2x = 0;
 	cycles_t median_amd64 = 0;
+	cycles_t median_jasmin = 0;
 	cycles_t median_precomp_bmi2 = 0;
 	cycles_t median_precomp_adx = 0;
 	cycles_t median_fiat32 = 0;
@@ -152,6 +155,7 @@ static int __init mod_init(void)
 		do_it(precomp_adx);
 	if (dangerous)
 		do_it(amd64);
+		do_it(jasmin);
 	do_it(fiat32);
 	do_it(donna32);
 	do_it(tweetnacl);
@@ -165,6 +169,7 @@ static int __init mod_init(void)
 	report_it(fiat64);
 	if (dangerous)
 		report_it(amd64);
+		report_it(jasmin);
 	if (boot_cpu_has(X86_FEATURE_AVX) && cpu_has_xfeatures(XFEATURE_MASK_SSE | XFEATURE_MASK_YMM, NULL))
 		report_it(sandy2x);
 	report_it(hacl51);
